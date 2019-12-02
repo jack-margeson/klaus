@@ -1,0 +1,27 @@
+{
+  "name": "klaus",
+  "version": "1.0.0",
+  "description": "klaus Discord bot, written in Node.JS.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node -r dotenv/config bot.js"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "discord.js": "^11.5.1",
+    "dotenv": "^8.2.0"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "https://klaus.glitch.me/"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "express",
+    "secret_santa"
+  ]
+}
