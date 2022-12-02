@@ -6,13 +6,6 @@ const fs = require("fs");
 const client = new Discord.Client();
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
-var http = require("http");
-var handle = (req, res) => {
-  res.end("Ho, ho, ho! Happy holidays!");
-};
-var server = http.createServer(handle);
-server.listen(process.env.PORT || 5000);
-
 // When the bot loads...
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -39,15 +32,17 @@ client.on("message", msg => {
       if (!undefined) {
         // Create some helper variables.
         var user = msg.author;
-        var guild = msg.channel.guild.name;
+        var guild = msg.channel.guild.id;
+        var guild_name = msg.channel.guild;
         var file = "guilds/" + guild + ".txt";
+        var file_date = "guilds/dates/" + guild + ".txt";
 
         // "help"
         // DM's the user the help menu.
         if (command === "help") {
           msg.channel.send(`Sending you the help menu via direct message!`);
           user.send(
-            "```asciidoc\r\n= Hello and happy holidays! =\r\nMy name is Klaus, the Secret Santa helper.\r\n-----------------\r\n[All my commands are defined by the prefix '\uD83C\uDF84'.]\r\n[Server admins: please create a \"Head Elf\" role and assign it]\r\n[to users you want to be able to use the Head Elf commands.]\r\n\r\n= List of Commands =\r\n[Regular User]\r\n\uD83C\uDF84 help :: Sends you this menu through DM. You probably knew that.\r\n\uD83C\uDF84 register :: Registers you to be a part of the server's secret santa!\r\n\uD83C\uDF84 unregister :: Unregisters you from the active secret santa.\r\n\uD83C\uDF84 donate :: Sends you the donation link through DM.\r\n\r\n[Head Elf]\r\n\uD83C\uDF84 delete :: Deletes the server's secret santa list (unregisters eveyrone).\r\n\uD83C\uDF84 start :: Assigns everyone their santas and messages them through DM!\r\n\r\n= Questions, comments, concerns? Message my programmer: dutchmargesta#4469 =\r\n```"
+            "```asciidoc\r\n= Hello and happy holidays! =\r\nMy name is Klaus, the Secret Santa helper.\r\n-----------------\r\n[All my commands are defined by the prefix '\uD83C\uDF84'.]\r\n[Server admins: please create a \"Head Elf\" role and assign it]\r\n[to users you want to be able to use the Head Elf commands.]\r\n\r\n= List of Commands =\r\n[Regular User]\r\n\uD83C\uDF84 help :: Sends you this menu through DM. You probably knew that.\r\n\uD83C\uDF84 register :: Registers you to be a part of the server's secret santa!\r\n\uD83C\uDF84 unregister :: Unregisters you from the active secret santa. \r\n\r\n[Head Elf]\r\n\uD83C\uDF84 delete :: Deletes the server's secret santa list (unregisters eveyrone).\r\n\uD83C\uDF84 start :: Assigns everyone their santas and messages them through DM!\r\n\r\n= Questions, comments, concerns? Message my programmer: dutchmargesta#4469 =\r\n```"
           );
         }
         // "register"
@@ -76,11 +71,11 @@ client.on("message", msg => {
                   msg.channel.send(`Thank you for registering, <@${user.id}>!`);
                   // Send the user a direct message confirming them.
                   user.send(
-                    `You are registered for the "${guild}" secret santa!` +
+                    `You are registered for the "${guild_name}" secret santa!` +
                       "\n" +
                       `Please wait for your head elf (server admin) to initiate the drawing.` +
                       "\n" +
-                      `If you decide you would no longer like to participate, please use the command "🎄 unregister".`
+                      "If you decide you would no longer like to participate, please use the command `🎄 unregister`."
                   );
                   // Console log all of the registered users.
                   fs.readFile(file, "utf8", function(err, users) {
@@ -100,7 +95,7 @@ client.on("message", msg => {
                   return console.log(err);
                 }
                 console.log(
-                  `User "${user.id}" added to the "${guild}" secret santa.`
+                  `User "${user.id}" added to the "${guild_name}" secret santa.`
                 );
               });
 
@@ -108,11 +103,11 @@ client.on("message", msg => {
               msg.channel.send(`Thank you for registering, <@${user.id}>!`);
               // Send the user a direct message confirming them.
               user.send(
-                `You are registered for the "${guild}" secret santa!` +
+                `You are registered for the "${guild_name}" secret santa!` +
                   "\n" +
                   `Please wait for your head elf (server admin) to initiate the drawing.` +
                   "\n" +
-                  `If you decide you would no longer like to participate, please use the command "🎄 unregister".`
+                  'If you decide you would no longer like to participate, please use the command `🎄 unregister`.'
               );
               // Console log all of the registered users.
               fs.readFile(file, "utf8", function(err, users) {
@@ -170,7 +165,7 @@ client.on("message", msg => {
                   );
                   // Log that the user has been removed.
                   console.log(
-                    `User "${user.id}" removed from the "${guild}" secret santa.`
+                    `User "${user.id}" removed from the "${guild_name}" secret santa.`
                   );
                   // Console log all of the registered users.
                   fs.readFile(file, "utf8", function(err, users) {
@@ -191,6 +186,30 @@ client.on("message", msg => {
             console.error(err);
           }
         }
+        // "date"
+        // Check's the date string that the Head Elf set for the exchange.
+        else if (command == "date") {
+          try {
+            if (fs.existsSync(file_date)) {
+              fs.readFile(file_date, "utf8", function(err, data) {
+                msg.channel.send("Your secret santa date is going to be `" + data + "`. Happy holidays!");
+              });
+            } else {
+              msg.channel.send("It looks like your Head Elf hasn't set a date for the secret santa yet!");
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        }
+        // "participants" 
+        // Lists the participants in the secret santa.
+        else if (command == "participants") {
+          try {
+            
+          } catch (err) {
+            console.error(err);
+          }
+        }
         // "start" - Head Elf only.
         // Starts the secret santa.
         else if (command === "start") {
@@ -207,7 +226,7 @@ client.on("message", msg => {
                       `Alright, let's do this thing! Getting all of the users...`
                     );
                     console.log(
-                      `Users participating in the "${guild}" secret santa: `
+                      `Users participating in the "${guild_name}" secret santa: `
                     );
                     for (var i = 0; i < users.length; i++) {
                       console.log(users[i]);
@@ -229,9 +248,9 @@ client.on("message", msg => {
                     for (var i = 0; i < users.length; i++) {
                       var id = users[i];
                       var id2 = recipients[i];
-                      var id2name = client.users.get(id2).username;
+                      var id2name = client.users.cache.get(id2).username;
                       client.users
-                        .get(id)
+                        .cache.get(id)
                         .send(`You are ${id2name}'s (<@${id2}>) secret santa!`);
                     }
                     msg.channel.send(
@@ -274,6 +293,8 @@ client.on("message", msg => {
                     );
                   }
                 });
+              } else {
+                msg.channel.send(`I can't start a secret santa without any particpants! Try getting at least 2 people to sign up.`);
               }
             } catch (err) {
               console.error(err);
@@ -288,20 +309,47 @@ client.on("message", msg => {
               if (err) {
                 console.error(err);
                 msg.channel.send(
-                  `It looks like "${guild}" already doesn't have a secret santa going right now!`
+                  `It looks like "${guild_name}" already doesn't have a secret santa going right now!`
                 );
                 return;
               }
               console.log(`Participants (${file}) removed.`);
               msg.channel.send(
-                `The "${guild}" secret santa has been canceled—all participants have been removed.`
+                `The "${guild_name}" secret santa has been canceled—all participants have been removed.`
               );
             });
           }
         }
-        else if (command === "donate") {
-          msg.channel.send(`Sending you some info through direct message...`)
-          user.send(`"Hi! My name is Jack Margeson, otherwise known as dutchmargesta. I'm a programmer in high school making things for fun—and if you enjoy my work or get some kind of use out of it and would like to support me through buying me a coffee (further fueling my caffiene addiction), I would be highly appreciative! Here's my link: https://ko-fi.com/margeson. Happy holidays!" —Jack Margeson`)
+        // "sdate" - Head Elf only.
+        // Allows the head elf to set a string that contains the date and time for the exchange for their guild.
+        else if (command == "sdate") {
+          message.splice(0,2);
+          date = message.join(" ");
+          if (date != "") {
+            try {
+              // Check if the file exists.
+              if (fs.existsSync(file_date)) {
+                fs.unlinkSync(file_date);
+                fs.appendFile(file_date, date, function(err) {
+                 if (err) {
+                   return console.error(err);
+                 }
+                });
+                msg.channel.send("I've already found a date for the exchange, so I've gone ahead and replaced it. Anyone can check the date of the secret santa with `🎄 date`. Have fun!");
+              } else {
+                fs.appendFile(file_date, date, function(err) {
+                 if (err) {
+                   return console.error(err);
+                 }
+                });
+                msg.channel.send("I've gone ahead and set the date for your secret santa! Anyone can check the date of the secret santa with `🎄 date`. Have fun!");
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          } else {
+            msg.channel.send("I can't set the date without an actual date! Please specify one, like this: `🎄 sdate December 25th, 2020 @ 3:00pm`.")
+          }
         }
         // "feet"
         // Joke command for Cameron, one of my bug testers.
@@ -342,9 +390,9 @@ function checkRecipients(users, recipients) {
 // checkHeadElf(msg)
 // Permision checking.
 function checkHeadElf(msg) {
-  var role = msg.guild.roles.find(role => role.name === "Head Elf");
+  var role = msg.guild.roles.cache.find(role => role.name === "Head Elf");
   if (role) {
-    if (msg.member.roles.has(role.id)) {
+    if (msg.member.roles.cache.has(role.id)) {
       return true;
     } else {
       msg.channel.send(
